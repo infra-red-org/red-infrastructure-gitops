@@ -1,23 +1,7 @@
 # ArgoCD Installation Module
 # This module installs ArgoCD automatically after the GKE cluster is created
 
-# Data source to get cluster credentials
-data "google_client_config" "default" {}
-
-# Configure Kubernetes provider to connect to the cluster
-provider "kubernetes" {
-  host                   = "https://${var.cluster_endpoint}"
-  token                  = data.google_client_config.default.access_token
-  cluster_ca_certificate = base64decode(var.cluster_ca_certificate)
-}
-
-provider "helm" {
-  kubernetes {
-    host                   = "https://${var.cluster_endpoint}"
-    token                  = data.google_client_config.default.access_token
-    cluster_ca_certificate = base64decode(var.cluster_ca_certificate)
-  }
-}
+# Note: Providers are configured in the root module
 
 # Create ArgoCD namespace
 resource "kubernetes_namespace" "argocd" {

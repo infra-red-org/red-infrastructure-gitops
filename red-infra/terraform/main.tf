@@ -18,7 +18,7 @@ terraform {
   
   # Store Terraform state in Google Cloud Storage
   backend "gcs" {
-    bucket = "your-terraform-state-bucket"  # Update with your bucket name
+    bucket = "cdsci-test-terraform-state-1753919333"
     prefix = "terraform/state"
   }
 }
@@ -29,9 +29,28 @@ provider "google" {
   region  = var.region
 }
 
+# Data source to get cluster credentials for Kubernetes and Helm providers
+data "google_client_config" "default" {}
+
+# Configure Kubernetes provider to connect to the cluster
+provider "kubernetes" {
+  host                   = module.gke.cluster_endpoint
+  token                  = data.google_client_config.default.access_token
+  cluster_ca_certificate = base64decode(module.gke.ca_certificate)
+}
+
+# Configure Helm provider to connect to the cluster
+provider "helm" {
+  kubernetes {
+    host                   = module.gke.cluster_endpoint
+    token                  = data.google_client_config.default.access_token
+    cluster_ca_certificate = base64decode(module.gke.ca_certificate)
+  }
+}
+
 # Create the VPC network and subnets
 module "network" {
-  source = "./terraform/modules/network"
+  source = "./modules/network"
   
   project_id   = var.project_id
   region       = var.region
@@ -44,7 +63,7 @@ module "network" {
 
 # Create IAM roles and Workload Identity
 module "iam" {
-  source = "./terraform/modules/iam"
+  source = "./modules/iam"
   
   project_id                = var.project_id
   github_repositories       = var.github_repositories
@@ -54,7 +73,7 @@ module "iam" {
 
 # Create the GKE Autopilot cluster
 module "gke" {
-  source = "./terraform/modules/gke"
+  source = "./modules/gke"
   
   project_id               = var.project_id
   region                   = var.region
@@ -69,7 +88,7 @@ module "gke" {
 
 # Install ArgoCD automatically after cluster is created
 module "argocd" {
-  source = "./terraform/modules/argocd"
+  source = "./modules/argocd"
   
   cluster_endpoint       = module.gke.cluster_endpoint
   cluster_ca_certificate = module.gke.ca_certificate
