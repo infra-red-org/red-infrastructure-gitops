@@ -1,0 +1,49 @@
+# Production-specific KEDA values
+keda:
+  # Production resource limits
+  resources:
+    operator:
+      limits:
+        cpu: 1000m
+        memory: 1000Mi
+      requests:
+        cpu: 200m
+        memory: 200Mi
+    metricServer:
+      limits:
+        cpu: 1000m
+        memory: 1000Mi
+      requests:
+        cpu: 200m
+        memory: 200Mi
+    webhooks:
+      limits:
+        cpu: 100m
+        memory: 200Mi
+      requests:
+        cpu: 50m
+        memory: 50Mi
+
+  # Production service account with Workload Identity
+  serviceAccount:
+    annotations:
+      iam.gke.io/gcp-service-account: "your-service-account@your-project.iam.gserviceaccount.com"  # Replace with actual SA
+
+  # Production logging
+  logging:
+    operator:
+      level: info
+      format: json  # Structured logging for production
+    metricServer:
+      level: 2      # Less verbose for production
+    webhooks:
+      level: info
+
+  # Production monitoring
+  prometheus:
+    metricServer:
+      enabled: true
+    operator:
+      enabled: true
+    webhooks:
+      enabled: true

@@ -1,0 +1,42 @@
+# Traefik Application Definition
+# This tells ArgoCD how to deploy Traefik load balancer
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: traefik
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: infrastructure
+  source:
+    # Points to the same repository, helm-charts/traefik directory
+    repoURL: https://github.com/infra-red-org/red-infrastructure-gitops
+    targetRevision: HEAD
+    path: red-apps/helm-charts/traefik
+    helm:
+      valueFiles:
+        - values.yaml  # Base configuration
+        - ../../environments/prod/traefik-values.yaml  # Production overrides
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: traefik-v2
+  syncPolicy:
+    automated:
+      prune: true      # Remove resources no longer defined
+      selfHeal: true   # Fix manual changes back to Git state
+    syncOptions:
+      - CreateNamespace=true  # Create namespace if it doesn't exist
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+  ignoreDifferences:
+    # Ignore differences in LoadBalancer service IPs (they're assigned by GCP)
+    - group: ""
+      kind: Service
+      jsonPointers:
+        - /spec/clusterIP
+        - /spec/clusterIPs

@@ -1,0 +1,138 @@
+# Ingress Routes for accessing monitoring services through Traefik
+---
+# HTTPS Redirect Middleware for monitoring namespace
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: https-redirect
+  namespace: monitoring
+spec:
+  redirectScheme:
+    scheme: https
+    permanent: true
+
+---
+# Prometheus IngressRoute (HTTPS)
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: prometheus-ingress
+  namespace: monitoring
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`gke-prometheus.yourdomain.com`)  # Replace with actual domain
+      kind: Rule
+      services:
+        - name: kube-prometheus-stack-prometheus
+          port: 9090
+  tls:
+    certResolver: letsencrypt
+
+---
+# Prometheus IngressRoute (HTTP -> HTTPS redirect)
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: prometheus-http-redirect
+  namespace: monitoring
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`gke-prometheus.yourdomain.com`)  # Replace with actual domain
+      kind: Rule
+      services:
+        - name: kube-prometheus-stack-prometheus
+          port: 9090
+      middlewares:
+        - name: https-redirect
+
+---
+# Grafana IngressRoute (HTTPS)
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: grafana-ingress
+  namespace: monitoring
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`gke-grafana.yourdomain.com`)  # Replace with actual domain
+      kind: Rule
+      services:
+        - name: kube-prometheus-stack-grafana
+          port: 80
+  tls:
+    certResolver: letsencrypt
+
+---
+# Grafana IngressRoute (HTTP -> HTTPS redirect)
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: grafana-http-redirect
+  namespace: monitoring
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`gke-grafana.yourdomain.com`)  # Replace with actual domain
+      kind: Rule
+      services:
+        - name: kube-prometheus-stack-grafana
+          port: 80
+      middlewares:
+        - name: https-redirect
+
+---
+# HTTPS Redirect Middleware for traefik namespace
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: https-redirect
+  namespace: traefik-v2
+spec:
+  redirectScheme:
+    scheme: https
+    permanent: true
+
+---
+# Traefik Dashboard IngressRoute (HTTPS)
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: traefik-dashboard
+  namespace: traefik-v2
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`gke-traefik.yourdomain.com`)  # Replace with actual domain
+      kind: Rule
+      services:
+        - name: api@internal
+          kind: TraefikService
+  tls:
+    certResolver: letsencrypt
+
+---
+# Traefik Dashboard IngressRoute (HTTP -> HTTPS redirect)
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: traefik-dashboard-http
+  namespace: traefik-v2
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`gke-traefik.yourdomain.com`)  # Replace with actual domain
+      kind: Rule
+      services:
+        - name: api@internal
+          kind: TraefikService
+      middlewares:
+        - name: https-redirect

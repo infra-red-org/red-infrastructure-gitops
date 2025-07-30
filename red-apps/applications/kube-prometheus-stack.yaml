@@ -1,0 +1,49 @@
+# Kube Prometheus Stack Application Definition
+# This tells ArgoCD how to deploy the monitoring stack (Prometheus, Grafana, Alertmanager)
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kube-prometheus-stack
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: infrastructure
+  source:
+    repoURL: https://github.com/infra-red-org/red-infrastructure-gitops
+    targetRevision: HEAD
+    path: red-apps/helm-charts/kube-prometheus-stack
+    helm:
+      valueFiles:
+        - values.yaml  # Base configuration
+        - ../../environments/prod/prometheus-values.yaml  # Production overrides
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true  # Required for CRDs
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+  ignoreDifferences:
+    - group: ""
+      kind: Service
+      jsonPointers:
+        - /spec/clusterIP
+        - /spec/clusterIPs
+    - group: "admissionregistration.k8s.io"
+      kind: MutatingWebhookConfiguration
+      jsonPointers:
+        - /webhooks/0/clientConfig/caBundle
+    - group: "admissionregistration.k8s.io"
+      kind: ValidatingWebhookConfiguration
+      jsonPointers:
+        - /webhooks/0/clientConfig/caBundle

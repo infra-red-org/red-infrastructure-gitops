@@ -1,0 +1,45 @@
+# Vault Application Definition
+# This tells ArgoCD how to deploy HashiCorp Vault for secrets management
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: vault
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: infrastructure
+  source:
+    repoURL: https://github.com/infra-red-org/red-infrastructure-gitops
+    targetRevision: HEAD
+    path: red-apps/helm-charts/vault
+    helm:
+      valueFiles:
+        - values.yaml  # Base configuration
+        - ../../environments/prod/vault-values.yaml  # Production overrides
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: vault
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true  # Required for CRDs
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+  ignoreDifferences:
+    - group: ""
+      kind: Service
+      jsonPointers:
+        - /spec/clusterIP
+        - /spec/clusterIPs
+    - group: "admissionregistration.k8s.io"
+      kind: MutatingWebhookConfiguration
+      jsonPointers:
+        - /webhooks/0/clientConfig/caBundle

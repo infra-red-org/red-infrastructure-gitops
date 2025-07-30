@@ -1,0 +1,36 @@
+# Production-specific Traefik values
+traefik:
+  # Production SSL configuration
+  certificatesResolvers:
+    letsencrypt:
+      acme:
+        email: "your-email@yourdomain.com"  # Replace with actual email
+        storage: "/data/acme.json"
+        httpChallenge:
+          entryPoint: "web"
+
+  # Production security settings
+  api:
+    dashboard: true
+    insecure: false  # Secure in production
+
+  # Remove insecure flag for production
+  additionalArguments:
+    - "--log.level=INFO"
+    - "--accesslog=true"
+    - "--api.dashboard=true"
+
+  # Production resource limits
+  resources:
+    requests:
+      cpu: 200m
+      memory: 100Mi
+    limits:
+      cpu: 500m
+      memory: 200Mi
+
+  # Production service annotations
+  service:
+    annotations:
+      cloud.google.com/load-balancer-type: "External"
+      # Add any additional production annotations

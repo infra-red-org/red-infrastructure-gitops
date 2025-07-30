@@ -1,0 +1,104 @@
+# KEDA Helm Chart Values - Base Configuration
+keda:
+  # Resource limits for Autopilot
+  resources:
+    operator:
+      limits:
+        cpu: 1000m
+        memory: 1000Mi
+      requests:
+        cpu: 100m
+        memory: 100Mi
+    metricServer:
+      limits:
+        cpu: 1000m
+        memory: 1000Mi
+      requests:
+        cpu: 100m
+        memory: 100Mi
+    webhooks:
+      limits:
+        cpu: 50m
+        memory: 100Mi
+      requests:
+        cpu: 10m
+        memory: 10Mi
+
+  # Security context
+  securityContext:
+    operator:
+      capabilities:
+        drop:
+          - ALL
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      seccompProfile:
+        type: RuntimeDefault
+    metricServer:
+      capabilities:
+        drop:
+          - ALL
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      seccompProfile:
+        type: RuntimeDefault
+    webhooks:
+      capabilities:
+        drop:
+          - ALL
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      seccompProfile:
+        type: RuntimeDefault
+
+  # Pod security context
+  podSecurityContext:
+    operator:
+      runAsNonRoot: true
+      runAsUser: 1001
+      runAsGroup: 1001
+      fsGroup: 1001
+    metricServer:
+      runAsNonRoot: true
+      runAsUser: 1001
+      runAsGroup: 1001
+      fsGroup: 1001
+    webhooks:
+      runAsNonRoot: true
+      runAsUser: 1001
+      runAsGroup: 1001
+      fsGroup: 1001
+
+  # Service account configuration
+  serviceAccount:
+    # Annotations for Workload Identity (will be overridden in environment-specific values)
+    annotations:
+      iam.gke.io/gcp-service-account: "your-service-account@your-project.iam.gserviceaccount.com"
+
+  # Logging configuration
+  logging:
+    operator:
+      level: info
+      format: console
+    metricServer:
+      level: 0
+    webhooks:
+      level: info
+
+  # Prometheus metrics
+  prometheus:
+    metricServer:
+      enabled: true
+      port: 9022
+      portName: metrics
+      path: /metrics
+    operator:
+      enabled: true
+      port: 8080
+      portName: metrics
+      path: /metrics
+    webhooks:
+      enabled: true
+      port: 8080
+      portName: metrics
+      path: /metrics

@@ -1,0 +1,89 @@
+# HashiCorp Vault Helm Chart Values - Base Configuration
+vault:
+  # Global configuration
+  global:
+    enabled: true
+    tlsDisable: true  # Disable TLS for development (enable in production)
+
+  # Injector configuration for automatic secret injection
+  injector:
+    enabled: true
+    
+    # Resource limits for GKE Autopilot
+    resources:
+      requests:
+        memory: 64Mi
+        cpu: 50m
+      limits:
+        memory: 128Mi
+        cpu: 100m
+    
+    # Security context
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 100
+      runAsGroup: 1000
+      fsGroup: 1000
+
+  # Server configuration
+  server:
+    # Development mode (NEVER use in production)
+    dev:
+      enabled: true
+      devRootToken: "root"  # Simple token for development
+    
+    # Data storage
+    dataStorage:
+      enabled: true
+      size: 10Gi
+      storageClass: standard-rwo
+      accessMode: ReadWriteOnce
+    
+    # Audit storage
+    auditStorage:
+      enabled: true
+      size: 5Gi
+      storageClass: standard-rwo
+      accessMode: ReadWriteOnce
+    
+    # Resource limits for GKE Autopilot
+    resources:
+      requests:
+        memory: 256Mi
+        cpu: 250m
+      limits:
+        memory: 512Mi
+        cpu: 500m
+    
+    # Service configuration
+    service:
+      enabled: true
+      type: ClusterIP
+      port: 8200
+      targetPort: 8200
+    
+    # Security context
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 100
+      runAsGroup: 1000
+      fsGroup: 1000
+    
+    # Readiness and liveness probes
+    readinessProbe:
+      enabled: true
+      path: "/v1/sys/health?standbyok=true&sealedcode=204&uninitcode=204"
+    livenessProbe:
+      enabled: true
+      path: "/v1/sys/health?standbyok=true"
+      initialDelaySeconds: 60
+
+  # UI configuration
+  ui:
+    enabled: true
+    serviceType: ClusterIP
+    externalVaultAddr: "http://vault.yourdomain.com"
+
+  # CSI provider (for secret mounting)
+  csi:
+    enabled: false

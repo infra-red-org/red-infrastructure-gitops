@@ -1,0 +1,136 @@
+# Kube Prometheus Stack Helm Chart Values - Base Configuration
+kube-prometheus-stack:
+  # Prometheus Operator configuration
+  prometheusOperator:
+    admissionWebhooks:
+      enabled: false
+    tls:
+      enabled: false
+    kubeletService:
+      enabled: false
+
+  # Prometheus configuration
+  prometheus:
+    prometheusSpec:
+      # Configure for subdomain access
+      externalUrl: "https://gke-prometheus.example.com"  # Override in environment-specific values
+      
+      # Resource limits for Autopilot
+      resources:
+        requests:
+          cpu: 200m
+          memory: 400Mi
+        limits:
+          cpu: 500m
+          memory: 800Mi
+      
+      # Storage configuration
+      storageSpec:
+        volumeClaimTemplate:
+          spec:
+            storageClassName: standard-rwo
+            accessModes: ["ReadWriteOnce"]
+            resources:
+              requests:
+                storage: 10Gi
+      
+      # Retention policy
+      retention: 15d
+      retentionSize: 8GB
+      
+      # Additional scrape configs for GKE Autopilot
+      additionalScrapeConfigs:
+        - job_name: 'kubernetes-pods-cadvisor'
+          scheme: https
+          metrics_path: '/metrics/cadvisor'
+          kubernetes_sd_configs:
+            - role: node
+          bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+          tls_config:
+            insecure_skip_verify: true
+          relabel_configs:
+            - action: labelmap
+              regex: __meta_kubernetes_node_label_(.+)
+
+  # Grafana configuration
+  grafana:
+    enabled: true
+    
+    # Admin credentials (change in production)
+    adminPassword: "prom-operator"  # Override in environment-specific values
+    
+    # Grafana configuration
+    "grafana.ini":
+      server:
+        root_url: "https://gke-grafana.example.com"  # Override in environment-specific values
+        domain: "gke-grafana.example.com"           # Override in environment-specific values
+      security:
+        allow_embedding: true
+    
+    # Resource limits for Autopilot
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+    
+    # Persistence
+    persistence:
+      enabled: true
+      storageClassName: standard-rwo
+      size: 5Gi
+
+  # Component configurations for GKE Autopilot
+  kubeStateMetrics:
+    enabled: true
+
+  nodeExporter:
+    enabled: false  # Not available in Autopilot
+
+  kubeControllerManager:
+    enabled: false  # Not accessible in Autopilot
+
+  kubeEtcd:
+    enabled: false  # Not accessible in Autopilot
+
+  kubeScheduler:
+    enabled: false  # Not accessible in Autopilot
+
+  kubeProxy:
+    enabled: false  # Not accessible in Autopilot
+
+  kubelet:
+    enabled: false  # Managed by Google in Autopilot
+
+  coreDns:
+    enabled: false  # Managed by Google in Autopilot
+
+  kubeApiServer:
+    enabled: false  # Not accessible in Autopilot
+
+  # Default rules configuration
+  defaultRules:
+    rules:
+      kubernetesSystem: false  # Disable system rules not applicable to Autopilot
+
+  # Alertmanager configuration
+  alertmanager:
+    enabled: true
+    alertmanagerSpec:
+      resources:
+        requests:
+          cpu: 50m
+          memory: 64Mi
+        limits:
+          cpu: 100m
+          memory: 128Mi
+      storage:
+        volumeClaimTemplate:
+          spec:
+            storageClassName: standard-rwo
+            accessModes: ["ReadWriteOnce"]
+            resources:
+              requests:
+                storage: 2Gi

@@ -1,0 +1,77 @@
+# Traefik Helm Chart Values - Base Configuration
+traefik:
+  # Use LoadBalancer service type
+  service:
+    type: LoadBalancer
+    annotations:
+      cloud.google.com/load-balancer-type: "External"
+
+  # Configure ports for HTTP and HTTPS (using non-privileged ports for GKE Autopilot)
+  ports:
+    web:
+      port: 8000        # Non-privileged port inside container
+      exposedPort: 80   # External LoadBalancer port
+    websecure:
+      port: 8443        # Non-privileged port inside container
+      exposedPort: 443  # External LoadBalancer port
+      tls:
+        enabled: true
+    traefik:
+      port: 8080
+      expose:
+        default: true   # Dashboard access
+
+  # Let's Encrypt configuration for automatic SSL
+  certificatesResolvers:
+    letsencrypt:
+      acme:
+        email: "admin@example.com"  # Override in environment-specific values
+        storage: "/data/acme.json"
+        httpChallenge:
+          entryPoint: "web"
+
+  # Enable API and Dashboard
+  api:
+    dashboard: true
+    insecure: true      # Set to false in production
+
+  # Additional arguments
+  additionalArguments:
+    - "--api.insecure=true"
+    - "--log.level=INFO"
+    - "--accesslog=true"
+
+  # Disable default dashboard IngressRoute (we'll create custom ones)
+  ingressRoute:
+    dashboard:
+      enabled: false
+
+  # Enable logging
+  logs:
+    general:
+      level: INFO
+    access:
+      enabled: true
+
+  # Resource limits for Autopilot
+  resources:
+    requests:
+      cpu: 100m
+      memory: 50Mi
+    limits:
+      cpu: 300m
+      memory: 150Mi
+
+  # Security context
+  securityContext:
+    capabilities:
+      drop:
+        - ALL
+    readOnlyRootFilesystem: true
+    runAsGroup: 65532
+    runAsNonRoot: true
+    runAsUser: 65532
+
+  # Pod security context
+  podSecurityContext:
+    fsGroup: 65532

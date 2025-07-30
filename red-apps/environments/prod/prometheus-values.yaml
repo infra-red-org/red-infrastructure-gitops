@@ -1,0 +1,76 @@
+# Production-specific Prometheus values
+kube-prometheus-stack:
+  # Production Prometheus configuration
+  prometheus:
+    prometheusSpec:
+      externalUrl: "https://gke-prometheus.yourdomain.com"  # Replace with actual domain
+      
+      # Production resource limits
+      resources:
+        requests:
+          cpu: 500m
+          memory: 1Gi
+        limits:
+          cpu: 1000m
+          memory: 2Gi
+      
+      # Production storage
+      storageSpec:
+        volumeClaimTemplate:
+          spec:
+            storageClassName: standard-rwo
+            accessModes: ["ReadWriteOnce"]
+            resources:
+              requests:
+                storage: 50Gi
+      
+      # Production retention
+      retention: 30d
+      retentionSize: 45GB
+
+  # Production Grafana configuration
+  grafana:
+    adminPassword: "change-me-in-production"  # Use a secret in real production
+    
+    "grafana.ini":
+      server:
+        root_url: "https://gke-grafana.yourdomain.com"  # Replace with actual domain
+        domain: "gke-grafana.yourdomain.com"           # Replace with actual domain
+      security:
+        allow_embedding: false  # More secure for production
+        cookie_secure: true
+        cookie_samesite: strict
+    
+    # Production resource limits
+    resources:
+      requests:
+        cpu: 200m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+    
+    # Production persistence
+    persistence:
+      enabled: true
+      storageClassName: standard-rwo
+      size: 10Gi
+
+  # Production Alertmanager
+  alertmanager:
+    alertmanagerSpec:
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 200m
+          memory: 256Mi
+      storage:
+        volumeClaimTemplate:
+          spec:
+            storageClassName: standard-rwo
+            accessModes: ["ReadWriteOnce"]
+            resources:
+              requests:
+                storage: 5Gi
