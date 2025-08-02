@@ -43,16 +43,33 @@ spec:
       kind: MutatingWebhookConfiguration
       jsonPointers:
         - /webhooks/0/clientConfig/caBundle
+        - /metadata/annotations
     - group: "admissionregistration.k8s.io"
       kind: ValidatingWebhookConfiguration
       jsonPointers:
         - /webhooks/0/clientConfig/caBundle
+        - /metadata/annotations
     - group: "apps"
       kind: Deployment
       jsonPointers:
         - /spec/template/metadata/annotations
+        - /metadata/annotations
+        - /metadata/generation
         - /status
     - group: ""
       kind: Pod
       jsonPointers:
         - /status
+        - /metadata/annotations
+    - group: ""
+      kind: ServiceAccount
+      jsonPointers:
+        - /metadata/annotations
+    - group: "rbac.authorization.k8s.io"
+      kind: ClusterRole
+      jsonPointers:
+        - /metadata/annotations
+    - group: "rbac.authorization.k8s.io"
+      kind: ClusterRoleBinding
+      jsonPointers:
+        - /metadata/annotations
