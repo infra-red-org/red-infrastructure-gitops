@@ -50,10 +50,10 @@ vault:
     resources:
       requests:
         memory: 128Mi
-        cpu: 100m
+        cpu: 500m  # GKE Autopilot minimum for pod anti-affinity
       limits:
         memory: 256Mi
-        cpu: 200m
+        cpu: 1000m
 
   # UI configuration with actual domain
   ui:
