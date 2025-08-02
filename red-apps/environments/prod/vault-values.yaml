@@ -20,16 +20,12 @@ vault:
         memory: 1Gi
         cpu: 1000m
     
-    # Production storage
+    # Storage disabled for dev mode
     dataStorage:
-      enabled: true
-      size: 50Gi
-      storageClass: standard-rwo
+      enabled: false
     
     auditStorage:
-      enabled: true
-      size: 20Gi
-      storageClass: standard-rwo
+      enabled: false
 
   # Production injector configuration
   injector:

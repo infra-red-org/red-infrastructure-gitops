@@ -32,19 +32,13 @@ vault:
       enabled: true
       devRootToken: "root"  # Simple token for development
     
-    # Data storage
+    # Data storage (disabled for dev mode)
     dataStorage:
-      enabled: true
-      size: 10Gi
-      storageClass: standard-rwo
-      accessMode: ReadWriteOnce
+      enabled: false
     
-    # Audit storage
+    # Audit storage (disabled for dev mode)
     auditStorage:
-      enabled: true
-      size: 5Gi
-      storageClass: standard-rwo
-      accessMode: ReadWriteOnce
+      enabled: false
     
     # Resource limits for GKE Autopilot
     resources:
