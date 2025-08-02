@@ -1,16 +1,16 @@
-# ArgoCD module variables
-
 variable "cluster_endpoint" {
-  description = "The endpoint of the GKE cluster"
+  description = "GKE cluster endpoint to trigger ArgoCD installation"
   type        = string
 }
 
-variable "cluster_ca_certificate" {
-  description = "The CA certificate of the GKE cluster"
+variable "argocd_version" {
+  description = "ArgoCD Helm chart version"
   type        = string
+  default     = "8.2.5"  # Latest stable version
 }
 
-variable "git_repository_url" {
-  description = "The Git repository URL that ArgoCD should watch"
+variable "domain" {
+  description = "Domain for ArgoCD server (optional)"
   type        = string
+  default     = "argocd.local"
 }

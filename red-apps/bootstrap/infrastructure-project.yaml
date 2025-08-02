@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: infrastructure
+  namespace: argocd
+spec:
+  description: Infrastructure applications project
+  sourceRepos:
+  - 'https://github.com/infra-red-org/red-infrastructure-gitops.git'
+  - 'https://traefik.github.io/charts'
+  - 'https://prometheus-community.github.io/helm-charts'
+  - 'https://hashicorp.github.io/vault-helm'
+  - 'https://kedacore.github.io/charts'
+  destinations:
+  - namespace: '*'
+    server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+  - group: '*'
+    kind: '*'
+  namespaceResourceWhitelist:
+  - group: '*'
+    kind: '*'

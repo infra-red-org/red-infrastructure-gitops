@@ -1,52 +1,5 @@
 # Main Terraform configuration for GKE cluster provisioning and ArgoCD installation
-terraform {
-  required_version = ">= 1.0"
-  required_providers {
-    google = {
-      source  = "hashicorp/google"
-      version = "~> 6.0"
-    }
-    kubernetes = {
-      source  = "hashicorp/kubernetes"
-      version = "~> 2.37.1"
-    }
-    helm = {
-      source  = "hashicorp/helm"
-      version = "~> 2.12.1"
-    }
-  }
-  
-  # Store Terraform state in Google Cloud Storage
-  backend "gcs" {
-    bucket = "cdsci-test-terraform-state-1753919333"
-    prefix = "terraform/state"
-  }
-}
 
-# Configure the Google Cloud provider
-provider "google" {
-  project = var.project_id
-  region  = var.region
-}
-
-# Data source to get cluster credentials for Kubernetes and Helm providers
-data "google_client_config" "default" {}
-
-# Configure Kubernetes provider to connect to the cluster
-provider "kubernetes" {
-  host                   = module.gke.cluster_endpoint
-  token                  = data.google_client_config.default.access_token
-  cluster_ca_certificate = base64decode(module.gke.ca_certificate)
-}
-
-# Configure Helm provider to connect to the cluster
-provider "helm" {
-  kubernetes {
-    host                   = module.gke.cluster_endpoint
-    token                  = data.google_client_config.default.access_token
-    cluster_ca_certificate = base64decode(module.gke.ca_certificate)
-  }
-}
 
 # Create the VPC network and subnets
 module "network" {
@@ -90,9 +43,7 @@ module "gke" {
 module "argocd" {
   source = "./modules/argocd"
   
-  cluster_endpoint       = module.gke.cluster_endpoint
-  cluster_ca_certificate = module.gke.ca_certificate
-  git_repository_url     = var.git_repository_url
+  cluster_endpoint = module.gke.cluster_endpoint
   
   depends_on = [module.gke]
 }

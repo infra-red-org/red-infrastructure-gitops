@@ -47,3 +47,12 @@ spec:
       kind: ValidatingWebhookConfiguration
       jsonPointers:
         - /webhooks/0/clientConfig/caBundle
+    - group: "apps"
+      kind: Deployment
+      jsonPointers:
+        - /spec/template/metadata/annotations
+        - /status
+    - group: ""
+      kind: Pod
+      jsonPointers:
+        - /status

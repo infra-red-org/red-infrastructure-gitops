@@ -1,13 +1,6 @@
-# ArgoCD module outputs
-
 output "argocd_namespace" {
   description = "The namespace where ArgoCD is installed"
-  value       = kubernetes_namespace.argocd.metadata[0].name
-}
-
-output "argocd_server_service" {
-  description = "The ArgoCD server service name"
-  value       = "argocd-server"
+  value       = "argocd"
 }
 
 output "argocd_admin_password_command" {
