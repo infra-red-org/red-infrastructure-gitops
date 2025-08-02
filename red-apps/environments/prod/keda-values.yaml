@@ -27,7 +27,7 @@ keda:
   # Production service account with Workload Identity
   serviceAccount:
     annotations:
-      iam.gke.io/gcp-service-account: "your-service-account@your-project.iam.gserviceaccount.com" # Replace with actual SA
+      iam.gke.io/gcp-service-account: "red-gitops-sa@cdsci-test.iam.gserviceaccount.com"
 
   # Production logging
   logging:

@@ -1,0 +1,79 @@
+# KEDA Vault Integration
+# This configures KEDA to use Vault for secret management
+
+---
+# ServiceAccount for KEDA with Vault annotations
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: keda-operator-vault
+  namespace: keda
+  annotations:
+    # Workload Identity annotation
+    iam.gke.io/gcp-service-account: "red-gitops-sa@cdsci-test.iam.gserviceaccount.com"
+    # Vault annotations for secret injection
+    vault.hashicorp.com/agent-inject: "true"
+    vault.hashicorp.com/role: "keda"
+    vault.hashicorp.com/agent-inject-secret-gcp-config: "secret/data/gcp/project"
+    vault.hashicorp.com/agent-inject-template-gcp-config: |
+      {{- with secret "secret/data/gcp/project" -}}
+      export GCP_PROJECT_ID="{{ .Data.data.project_id }}"
+      export GCP_REGION="{{ .Data.data.region }}"
+      {{- end -}}
+
+---
+# ConfigMap for KEDA configuration using Vault secrets
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: keda-vault-config
+  namespace: keda
+data:
+  vault-integration.yaml: |
+    # KEDA configuration that uses Vault for secrets
+    apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: keda-gcp-config
+      namespace: keda
+    data:
+      # These values will be populated by Vault Agent
+      project_id: "{{ .Values.gcp.project_id }}"
+      region: "{{ .Values.gcp.region }}"
+
+---
+# Example ScaledObject that uses Workload Identity (no secrets in YAML)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: keda-scaledobject-example
+  namespace: keda
+data:
+  example-scaledobject.yaml: |
+    apiVersion: keda.sh/v1alpha1
+    kind: ScaledObject
+    metadata:
+      name: gcp-pubsub-scaledobject
+      namespace: default
+    spec:
+      scaleTargetRef:
+        name: my-app
+      minReplicaCount: 0
+      maxReplicaCount: 10
+      triggers:
+      - type: gcp-pubsub
+        metadata:
+          subscriptionName: "my-subscription"
+          # No credentials needed - uses Workload Identity
+        authenticationRef:
+          name: gcp-pubsub-auth
+    ---
+    apiVersion: keda.sh/v1alpha1
+    kind: TriggerAuthentication
+    metadata:
+      name: gcp-pubsub-auth
+      namespace: default
+    spec:
+      # Uses Workload Identity - no secrets required
+      podIdentity:
+        provider: gcp

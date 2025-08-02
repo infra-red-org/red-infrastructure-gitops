@@ -73,7 +73,7 @@ keda:
   serviceAccount:
     # Annotations for Workload Identity (will be overridden in environment-specific values)
     annotations:
-      iam.gke.io/gcp-service-account: "your-service-account@your-project.iam.gserviceaccount.com"
+      iam.gke.io/gcp-service-account: "red-gitops-sa@cdsci-test.iam.gserviceaccount.com"
 
   # Logging configuration
   logging:
