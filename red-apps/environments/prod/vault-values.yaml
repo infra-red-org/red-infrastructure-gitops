@@ -1,29 +1,15 @@
 # Production-specific Vault values
 vault:
-  # Production server configuration
+  # Development server configuration (simplified for demo)
   server:
-    # Disable dev mode in production
+    # Enable dev mode for easier setup
     dev:
-      enabled: false
-    
-    # Enable HA mode for production
-    ha:
       enabled: true
-      replicas: 3
-      raft:
-        enabled: true
-        setNodeId: true
-        config: |
-          ui = true
-          listener "tcp" {
-            tls_disable = 1
-            address = "[::]:8200"
-            cluster_address = "[::]:8201"
-          }
-          storage "raft" {
-            path = "/vault/data"
-          }
-          service_registration "kubernetes" {}
+      devRootToken: "root"
+    
+    # Disable HA mode for simplicity
+    ha:
+      enabled: false
     
     # Production resource limits
     resources:

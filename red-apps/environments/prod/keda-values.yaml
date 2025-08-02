@@ -27,15 +27,15 @@ keda:
   # Production service account with Workload Identity
   serviceAccount:
     annotations:
-      iam.gke.io/gcp-service-account: "your-service-account@your-project.iam.gserviceaccount.com"  # Replace with actual SA
+      iam.gke.io/gcp-service-account: "your-service-account@your-project.iam.gserviceaccount.com" # Replace with actual SA
 
   # Production logging
   logging:
     operator:
       level: info
-      format: json  # Structured logging for production
+      format: json # Structured logging for production
     metricServer:
-      level: 2      # Less verbose for production
+      level: 2 # Less verbose for production
     webhooks:
       level: info
 
